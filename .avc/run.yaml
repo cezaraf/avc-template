@@ -1,7 +1,7 @@
 version: avc.dev/v1alpha1
 run_id: AVC-BOOTSTRAP-0001
-revision: 6
-head: UNBORN
+revision: 7
+head: d65b51fdc474bce8d95c09e7490bc04801e3b856
 
 story:
   outcome: Any maintainer can install the AVC/XP kernel with ai-memory into a Git repository through a harness-agnostic installer and obtain the public GitHub template cezaraf/avc-template.
@@ -99,11 +99,11 @@ authority:
   deploy: human
 
 state:
-  phase: verifying
-  micro_phase: local_gates
+  phase: candidate
+  micro_phase: observe
   active_node: null
   blocked_by:
-    - Exact-HEAD verification, public GitHub observation, independent review, and human acceptance are pending.
+    - Independent review and human acceptance are pending.
   repair_cycles: 0
 
 graph:
@@ -172,10 +172,35 @@ graph:
     depends_on: [N3]
     authorized_paths:
       - ".avc/evidence/**"
-    status: runnable
+    status: completed
     created_from: ACC-006
-    attempt: 0
-    evidence: null
+    attempt: 1
+    evidence:
+      verified_head: d65b51fdc474bce8d95c09e7490bc04801e3b856
+      local_ci:
+        command: ["./.avc/scripts/ci.sh"]
+        exit_code: 0
+        observation: Thirteen frozen tests passed.
+      strict_doctor:
+        command: ["python3", ".avc/bin/avc.py", "doctor", "--strict"]
+        exit_code: 0
+        observation: Required files, schemas, Codex MCP/hooks, skills, Git HEAD, binary, and live server passed.
+      live_memory:
+        command: ["./.avc/scripts/qa-ai-memory.sh"]
+        exit_code: 0
+        observation: ai-memory status, MCP initialize, and memory_status passed.
+      remote_repository:
+        url: https://github.com/cezaraf/avc-template
+        visibility: PUBLIC
+        is_template: true
+        default_branch: main
+        remote_head: d65b51fdc474bce8d95c09e7490bc04801e3b856
+      remote_installer:
+        source: https://raw.githubusercontent.com/cezaraf/avc-template/main/install.sh
+        harness: codex
+        exit_code: 0
+        observation: Public raw script downloaded the GitHub archive, installed a project-scoped kernel and Codex adapter, and passed offline doctor in a fresh Git repository.
+      independence: The executable oracle was frozen before Builder work; a separate human or agent review remains pending.
     stop_condition: ACC-001 through ACC-006 have exact-HEAD local and remote evidence with no blocking finding
 
 discoveries:
@@ -185,6 +210,9 @@ discoveries:
   - id: DISC-002
     fact: The local repository is on unborn main with all template files untracked.
     source: git status and git rev-parse on 2026-08-21
+  - id: DISC-003
+    fact: cezaraf/avc-template is public, marked as a GitHub template, defaults to main, and served a working remote installer at commit d65b51fdc474bce8d95c09e7490bc04801e3b856.
+    source: gh repo view, git ls-remote, raw.githubusercontent.com, and remote consumer QA on 2026-08-21
 amendments:
   - id: AMD-001
     status: accepted
@@ -226,4 +254,10 @@ amendments:
       - ".avc/tests/test_avc.py"
       - ".ai-memory.toml"
     rollback: Revert the three identity fields together before publication; never split config, marker, and acceptance identity.
-evidence: {}
+evidence:
+  ACC-001: N4.local_ci
+  ACC-002: N4.live_memory
+  ACC-003: N4.local_ci
+  ACC-004: N4.local_ci and N4.remote_installer
+  ACC-005: N4.local_ci
+  ACC-006: N4.remote_repository and N4.remote_installer
