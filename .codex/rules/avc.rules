@@ -1,0 +1,82 @@
+# Project-local execution policy. Rules govern commands outside the sandbox;
+# hooks and CI enforce repository paths and lifecycle invariants.
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "AVC forbids destructive history/worktree replacement; use a targeted, recoverable change with explicit human direction.",
+    match = ["git reset --hard HEAD", "git reset --hard origin/main"],
+    not_match = ["git reset --soft HEAD~1"],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", ["-f", "-fd", "-df", "-fdx", "-xdf"]],
+    decision = "forbidden",
+    justification = "AVC forbids irreversible removal of untracked work; inspect targets and use a recoverable operation.",
+    match = ["git clean -fd", "git clean -fdx"],
+    not_match = ["git clean -n"],
+)
+
+prefix_rule(
+    pattern = ["rm", ["-rf", "-fr"]],
+    decision = "forbidden",
+    justification = "AVC forbids recursive forced deletion through the agent command policy; resolve exact targets and use a recoverable deletion with human authority.",
+    match = ["rm -rf build", "rm -fr cache"],
+    not_match = ["rm file.tmp", "rm -r empty-dir"],
+)
+
+prefix_rule(
+    pattern = ["git", ["commit", "push"]],
+    decision = "prompt",
+    justification = "AVC project policy reserves commit and push authority for the human.",
+    match = ["git commit -m change", "git push origin main"],
+    not_match = ["git status", "git diff"],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", ["create", "merge", "close", "reopen"]],
+    decision = "prompt",
+    justification = "AVC requires human authority for pull-request mutations and merge.",
+    match = ["gh pr create", "gh pr merge 42", "gh pr close 42"],
+    not_match = ["gh pr view 42", "gh pr list"],
+)
+
+prefix_rule(
+    pattern = ["docker", ["system", "volume", "container", "image", "network"], "prune"],
+    decision = "prompt",
+    justification = "Docker prune can remove unrelated host state; inspect exact scope and obtain human approval.",
+    match = ["docker system prune", "docker volume prune"],
+    not_match = ["docker ps", "docker compose ps"],
+)
+
+prefix_rule(
+    pattern = ["docker", "compose", ["down", "rm"]],
+    decision = "prompt",
+    justification = "Stopping/removing the local runtime is an external state change; confirm the exact compose project first.",
+    match = ["docker compose down", "docker compose rm"],
+    not_match = ["docker compose ps", "docker compose up -d"],
+)
+
+prefix_rule(
+    pattern = [["npm", "pnpm", "yarn", "pip", "pip3", "cargo"], ["install", "add", "update"]],
+    decision = "prompt",
+    justification = "AVC requires human authority for new dependencies or dependency changes.",
+    match = ["npm install left-pad", "pnpm add zod", "pip install requests", "cargo add serde"],
+    not_match = ["npm test", "cargo test", "pip list"],
+)
+
+prefix_rule(
+    pattern = ["kubectl", ["delete", "apply", "replace", "patch", "rollout"]],
+    decision = "prompt",
+    justification = "Cluster mutations require explicit human deployment or destructive-effect authority.",
+    match = ["kubectl delete pod api", "kubectl apply -f deploy.yaml", "kubectl rollout restart deployment/api"],
+    not_match = ["kubectl get pods", "kubectl describe pod api"],
+)
+
+prefix_rule(
+    pattern = ["terraform", ["apply", "destroy", "import"]],
+    decision = "prompt",
+    justification = "Infrastructure mutations require explicit human authority and rollback evidence.",
+    match = ["terraform apply", "terraform destroy", "terraform import aws_s3_bucket.x x"],
+    not_match = ["terraform plan", "terraform validate"],
+)

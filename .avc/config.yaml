@@ -1,0 +1,138 @@
+version: avc.dev/v1alpha1
+
+project:
+  name: avc-template
+  default_branch: main
+  work_directory: .
+
+commands:
+  install:
+    - ["./.avc/scripts/bootstrap-ai-memory.sh"]
+  start:
+    - ["docker", "compose", "-p", "avc-ai-memory", "-f", ".avc/ai-memory/compose.yaml", "up", "-d"]
+  baseline:
+    - ["python3", ".avc/bin/avc.py", "doctor", "--offline"]
+  fast:
+    - ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_*.py"]
+  affected:
+    - ["python3", ".avc/bin/avc.py", "doctor"]
+  acceptance:
+    - ["python3", ".avc/bin/avc.py", "doctor", "--strict"]
+  full_ci:
+    - ["./.avc/scripts/ci.sh"]
+  format: []
+  lint:
+    - ["python3", "-m", "compileall", "-q", ".avc/bin", ".avc/hooks", ".avc/tests"]
+  typecheck: []
+  build: []
+  live_qa:
+    - ["./.avc/scripts/qa-ai-memory.sh"]
+
+lanes:
+  default: flow
+  flow:
+    required_gates: [doctor, frame, oracle, build, verify, integrate]
+    required_agents: [navigator, scout, builder, verifier]
+    review: light
+    live_qa: when_applicable
+    evidence_retention_days: 14
+  guarded:
+    required_gates: [doctor, frame, oracle, build, verify, review, integrate, observe]
+    required_agents: [navigator, scout, builder, verifier, reviewer]
+    review: independent
+    live_qa: when_applicable
+    require_rollback: true
+    evidence_retention_days: 90
+  governed:
+    required_gates: [doctor, frame, oracle, build, verify, review, integrate, observe]
+    required_agents: [navigator, scout, builder, verifier, reviewer]
+    review: independent_specialist
+    live_qa: required_when_observable
+    require_rollback: true
+    require_human_checkpoints: true
+    sdd_package: sdd/prompts
+    evidence_retention_days: 365
+
+risk_triggers:
+  classification:
+    keyword_is_signal_only: true
+    confirmed_impact_promotes: true
+    changed_path_match_promotes: true
+    unknown_signal_minimum_lane: guarded
+  governed:
+    confirmed_impacts:
+      - changes_authentication_enforcement
+      - changes_authorization_enforcement
+      - moves_or_commits_money
+      - exposes_or_transforms_sensitive_data
+      - crosses_tenant_boundary
+      - performs_destructive_or_irreversible_migration
+      - changes_production_secrets_or_critical_infrastructure
+    signal_keywords: [authentication, authorization, billing, payment, pii, compliance, tenant, secret, destructive migration]
+    paths: ["**/auth/**", "**/payments/**", "**/billing/**", "**/secrets/**", "infra/production/**", "migrations/destructive/**"]
+  guarded:
+    confirmed_impacts:
+      - changes_public_api_or_event_contract
+      - changes_persistence_schema
+      - adds_or_major_upgrades_dependency
+      - changes_concurrency_retry_or_idempotency
+      - changes_slo_or_hot_path
+      - requires_live_runtime_to_verify
+    signal_keywords: [public api, event contract, schema, concurrency, retry, idempotency, performance, dependency]
+    paths: ["**/api/**", "**/events/**", "**/migrations/**", "**/package-lock.json", "**/pnpm-lock.yaml", "**/Gemfile.lock", "**/poetry.lock"]
+
+protected_paths:
+  - ".avc/config.yaml"
+  - ".avc/roles/**"
+  - ".avc/templates/**"
+  - ".avc/hooks/**"
+  - ".avc/scripts/**"
+  - ".agents/skills/**"
+  - ".codex/**"
+  - ".ai-memory.toml"
+  - ".github/workflows/**"
+  - "infra/production/**"
+
+budgets:
+  max_active_stories: 1
+  max_active_builders: 1
+  max_future_nodes: 3
+  repair_cycles_without_new_evidence: 2
+  flow_story_hours: 4
+  guarded_story_hours: 16
+  spike_minutes: 60
+  target_fast_feedback_seconds: 60
+  target_full_ci_minutes: 10
+
+authority:
+  scope_expansion: human
+  lane_escalation: navigator
+  lane_reduction: human
+  oracle_change_after_freeze: human
+  new_dependency: human
+  migration: human
+  gate_waiver: human
+  commit: human
+  push: human
+  pull_request: human
+  merge: human
+  deploy: human
+  destructive_external_effect: human
+
+evidence:
+  directory: .avc/evidence
+  require_head: true
+  require_command_argv: true
+  require_exit_code: true
+  stale_on_head_change: affected
+  accepted_statuses: [PASS, FAIL, BLOCKED, NEEDS_AMENDMENT]
+
+memory:
+  provider: ai-memory
+  required: true
+  version: 1.29.0
+  server_url: http://127.0.0.1:49374
+  project_marker: .ai-memory.toml
+  fail_closed_mcp_startup: true
+  capture_assistant: false
+  retrieved_content_is_untrusted: true

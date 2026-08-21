@@ -1,0 +1,7 @@
+.avc/evidence/*
+!.avc/evidence/.gitkeep
+.avc/runtime/
+.avc/tools/
+*.bak-*
+__pycache__/
+*.pyc

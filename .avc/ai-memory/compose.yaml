@@ -1,0 +1,18 @@
+services:
+  ai-memory:
+    image: akitaonrails/ai-memory:1.29.0@sha256:1d8a2ca7d7bc2349ba964d2d97dafb683632676460c1e373083f919a18c60d37
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:49374:49374"
+    volumes:
+      - ai-memory-data:/data
+    healthcheck:
+      test: ["CMD", "ai-memory", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+volumes:
+  ai-memory-data:
+    name: avc-ai-memory-data

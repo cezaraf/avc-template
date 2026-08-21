@@ -1,0 +1,172 @@
+{
+  "description": "AVC/XP governance plus project-scoped ai-memory v1.29.0 lifecycle capture.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" session-start",
+            "statusMessage": "Loading ai-memory handoff and project briefing",
+            "additionalContextLimit": 5000,
+            "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" session-start",
+            "statusMessage": "Loading active AVC run",
+            "additionalContextLimit": 2500,
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "other",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" session-end",
+            "statusMessage": "Finalizing ai-memory handoff",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" user-prompt-submit",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" pre-tool-use",
+            "async": true,
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" pre-tool-use",
+            "statusMessage": "Checking AVC scope and protected paths",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" post-tool-use",
+            "async": true,
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" post-tool-use",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" pre-compact",
+            "statusMessage": "Persisting bounded ai-memory checkpoint",
+            "timeout": 20
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" pre-compact",
+            "additionalContextLimit": 2500,
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" subagent-start",
+            "async": true,
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" subagent-start",
+            "additionalContextLimit": 1500,
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" subagent-stop",
+            "async": true,
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" subagent-stop",
+            "statusMessage": "Validating canonical AVC agent result",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/ai_memory_hook.py\" stop",
+            "async": true,
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/.avc/hooks/avc_hook.py\" stop",
+            "statusMessage": "Checking AVC stop conditions",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

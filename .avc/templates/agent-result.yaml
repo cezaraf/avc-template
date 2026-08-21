@@ -1,0 +1,16 @@
+status: PASS
+summary: ""
+facts: []
+changed_paths: []
+commands:
+  - argv: []
+    exit_code: null
+findings:
+  - severity: note
+    claim: ""
+    evidence: ""
+    recommendation: ""
+risks_discovered: []
+requested_transition: null
+state_revision: null
+head: null

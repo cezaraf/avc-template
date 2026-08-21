@@ -1,0 +1,31 @@
+[features]
+hooks = true
+
+[agents]
+max_concurrent_threads_per_session = 4
+
+[mcp_servers.ai-memory]
+url = "http://127.0.0.1:49374/mcp"
+enabled = true
+required = true
+startup_timeout_sec = 10
+tool_timeout_sec = 60
+default_tools_approval_mode = "writes"
+
+[mcp_servers.ai-memory.tools.memory_status]
+approval_mode = "approve"
+
+[mcp_servers.ai-memory.tools.memory_query]
+approval_mode = "approve"
+
+[mcp_servers.ai-memory.tools.memory_recent]
+approval_mode = "approve"
+
+[mcp_servers.ai-memory.tools.memory_read_page]
+approval_mode = "approve"
+
+[mcp_servers.ai-memory.tools.memory_briefing]
+approval_mode = "approve"
+
+[mcp_servers.ai-memory.tools.memory_explore]
+approval_mode = "approve"

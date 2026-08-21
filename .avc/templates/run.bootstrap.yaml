@@ -1,0 +1,87 @@
+version: avc.dev/v1alpha1
+run_id: AVC-BOOTSTRAP-0001
+revision: 1
+head: __HEAD__
+
+story:
+  outcome: Configure __PROJECT__'s first small observable product outcome before implementation.
+  value: Replace this bootstrap story through the avc-start workflow.
+  non_goals:
+    - Implement product behavior before commands, risk, scope, and acceptance are factual.
+  lane: guarded
+  lane_reasons:
+    - Product-specific risk and verification commands are not known yet.
+  examples:
+    - id: ACC-001
+      given: The product outcome and consumer surface are understood
+      when: The maintainer completes avc-start and the baseline scout
+      then: The active story has executable acceptance and the smallest authorized slice
+  definition_of_done:
+    - Replace this bootstrap contract with a real accepted outcome
+
+scope:
+  allow:
+    - "AGENTS.md"
+    - "START-HERE.md"
+    - ".avc/**"
+    - "src/**"
+    - "app/**"
+    - "lib/**"
+    - "tests/**"
+    - "docs/**"
+  deny:
+    - ".git/**"
+    - "infra/production/**"
+  acceptance_paths:
+    - "tests/**"
+
+commands:
+  baseline: ["python3", ".avc/bin/avc.py", "doctor", "--offline"]
+  fast: ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_*.py"]
+  affected: ["python3", ".avc/bin/avc.py", "doctor", "--offline"]
+  acceptance: ["replace-with-product-acceptance-command"]
+  full: ["./.avc/scripts/ci.sh"]
+  live_qa: ["./.avc/scripts/qa-ai-memory.sh"]
+
+oracle:
+  status: draft
+  owner: verifier
+  frozen_at_revision: null
+  acceptance_ids: [ACC-001]
+  witness: executable
+
+authority:
+  scope_expansion: human
+  lane_reduction: human
+  oracle_change_after_freeze: human
+  new_dependency: human
+  migration: human
+  commit: human
+  push: human
+  merge: human
+  deploy: human
+
+state:
+  phase: blocked
+  micro_phase: bootstrap
+  active_node: null
+  blocked_by:
+    - Run avc-start to replace the bootstrap outcome and product commands.
+  repair_cycles: 0
+
+graph:
+  - id: N1
+    kind: scout
+    intent: Establish product commands, relevant paths, risks, and the first observable outcome
+    owner: scout
+    depends_on: []
+    authorized_paths: []
+    status: runnable
+    created_from: bootstrap
+    attempt: 0
+    evidence: null
+    stop_condition: Baseline and first outcome are factual
+
+discoveries: []
+amendments: []
+evidence: {}

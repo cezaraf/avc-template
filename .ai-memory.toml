@@ -1,0 +1,18 @@
+# ai-memory v1 marker. Keep scope stable across subdirectories and worktrees.
+workspace = "default"
+project = "avc-template"
+
+[briefing]
+inject_on_session_start = "true"
+max_chars = 5000
+
+[capture]
+ignore_paths = [
+  ".env",
+  ".env.*",
+  "**/*.key",
+  "**/*.pem",
+  "**/secrets/**",
+  ".avc/evidence/**",
+  ".avc/runtime/**",
+]
