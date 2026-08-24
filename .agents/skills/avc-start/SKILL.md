@@ -12,9 +12,13 @@ instructions and checkout state.
 
 Capture one vertical outcome, why it matters, explicit non-goals, one to three
 observable examples, reversibility, the smallest initial allow/deny surface,
-and known commands. Classify risk from confirmed impact and sensitive changed
-paths; keywords are scouting signals, not proof. Unknown risk is at least
-`guarded`. Promotion is autonomous for the Navigator; reduction is human-only.
+and known commands. Classify risk from `.avc/config.yaml: risk_triggers`:
+`confirmed_impacts` and a lane's `confirmed_paths` promote a lane on their
+own; `signal_keywords` and a lane's `signal_paths` are scouting signals only
+(never proof) — a path that only *names* a convention (e.g. `**/auth/**`)
+must not by itself force a lane the way a real confirmed impact does. Unknown
+risk is at least `guarded`. Promotion is autonomous for the Navigator;
+reduction is human-only.
 
 Create or amend `.avc/run.yaml` only as Navigator. Keep the oracle `draft`, the
 graph to one Scout node, and implementation inactive until baseline, frame, and

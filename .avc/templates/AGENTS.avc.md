@@ -51,5 +51,9 @@ Core commands:
   hand-timing a command — `date`'s millisecond truncation is not portable).
 
 Product-specific install, test, build, lint, live-QA, and deployment commands
-must be filled in `.avc/config.yaml`; never invent successful output.
+must be filled in `.avc/config.yaml`; never invent successful output. If a
+step genuinely doesn't apply (e.g. no install step for a zero-dependency
+project), set it to `[]` — never to an always-succeeding stand-in like
+`true` or `exit 0`; that is the same silently-passing anti-pattern the
+placeholder commands exist to prevent, just reintroduced by hand.
 <!-- avc:end -->

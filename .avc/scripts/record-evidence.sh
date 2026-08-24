@@ -12,9 +12,10 @@ Usage:
 
 Writes an evidence.json-shaped file to --out with run_id, node, head, command,
 cwd, started_at/finished_at (UTC, ISO 8601), duration_ms, exit_code, and
-environment. The wrapped command's own exit code is NOT propagated as this
-script's exit code (evidence must be written whether the command passed or
-failed) — check "exit_code" in the written file.
+environment. Evidence is always written, whether the wrapped command passed
+or failed. This script's own exit code IS the wrapped command's exit code
+(so it composes with && / set -e as expected) — the same value is also in
+the written file's "exit_code" field.
 EOF
 }
 
