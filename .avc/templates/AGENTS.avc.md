@@ -51,7 +51,13 @@ Core commands:
   hand-timing a command — `date`'s millisecond truncation is not portable).
 
 Product-specific install, test, build, lint, live-QA, and deployment commands
-must be filled in `.avc/config.yaml`; never invent successful output. If a
+must be filled in `.avc/config.yaml`; never invent successful output.
+Replacing these placeholder entries during the Navigator's initial
+`avc-start` framing is a pre-authorized, expected exception to
+`protected_paths` — it is the documented next step after install, not an
+ad-hoc edit — so it does not itself require a separate `human` gate. Any
+other change to `.avc/config.yaml` after that first framing still needs an
+explicit amendment per the protected-path rule above. If a
 step genuinely doesn't apply (e.g. no install step for a zero-dependency
 project), set it to `[]` — never to an always-succeeding stand-in like
 `true` or `exit 0`; that is the same silently-passing anti-pattern the
