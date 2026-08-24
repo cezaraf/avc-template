@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import os
@@ -270,6 +271,79 @@ def run_doctor(*, offline: bool, strict: bool, json_output: bool) -> int:
     return 1 if any(check["status"] == "FAIL" for check in checks) else 0
 
 
+LANE_ORDER = {"flow": 0, "guarded": 1, "governed": 2}
+
+
+def changed_paths(against: str | None) -> list[str]:
+    """Changed paths as posix strings, relative to ROOT. Includes untracked
+    new files (a brand-new module's path matters just as much as an edited
+    one) and, when --against is given, everything that differs from that
+    revision instead of the working tree."""
+    paths: set[str] = set()
+    if against:
+        diff = subprocess.run(
+            ["git", "-C", str(ROOT), "diff", "--name-only", against],
+            check=False, capture_output=True, text=True,
+        )
+        paths.update(line.strip() for line in diff.stdout.splitlines() if line.strip())
+    else:
+        diff = subprocess.run(
+            ["git", "-C", str(ROOT), "diff", "--name-only", "HEAD"],
+            check=False, capture_output=True, text=True,
+        )
+        paths.update(line.strip() for line in diff.stdout.splitlines() if line.strip())
+        status = subprocess.run(
+            ["git", "-C", str(ROOT), "status", "--porcelain", "--untracked-files=all"],
+            check=False, capture_output=True, text=True,
+        )
+        for line in status.stdout.splitlines():
+            if line.startswith("??"):
+                paths.add(line[3:].strip())
+    return sorted(paths)
+
+
+def classify_paths(config: dict, paths: list[str], text: str | None) -> tuple[str, list[str]]:
+    """Mechanical-only classification: matches changed paths (and optional
+    free text) against risk_triggers.*.confirmed_paths/signal_paths and
+    signal_keywords. Returns the MINIMUM lane these mechanical signals alone
+    justify, and the reasons. This never substitutes for a Navigator's
+    semantic confirmed_impacts judgment (e.g. "this changes auth
+    enforcement") — that stays doctrine, by design; see
+    risk_triggers.classification comments in .avc/config.yaml."""
+    triggers = config.get("risk_triggers") or {}
+    classification = triggers.get("classification") or {}
+    floor_lane = classification.get("unknown_signal_minimum_lane", "guarded")
+
+    lane = "flow"
+    reasons: list[str] = []
+
+    def promote(new_lane: str, reason: str) -> None:
+        nonlocal lane
+        if LANE_ORDER[new_lane] > LANE_ORDER[lane]:
+            lane = new_lane
+        reasons.append(reason)
+
+    for tier in ("guarded", "governed"):
+        tier_cfg = triggers.get(tier) or {}
+        for pattern in tier_cfg.get("confirmed_paths") or []:
+            hits = [p for p in paths if fnmatch.fnmatch(p, pattern)]
+            if hits:
+                promote(tier, f"confirmed_paths[{tier}] {pattern!r} matched {hits}")
+        for pattern in tier_cfg.get("signal_paths") or []:
+            hits = [p for p in paths if fnmatch.fnmatch(p, pattern)]
+            if hits:
+                promote(floor_lane, f"signal_paths[{tier}] {pattern!r} matched {hits} (signal only, floor={floor_lane})")
+        if text:
+            lowered = text.lower()
+            hit_keywords = [kw for kw in tier_cfg.get("signal_keywords") or [] if kw.lower() in lowered]
+            if hit_keywords:
+                promote(floor_lane, f"signal_keywords[{tier}] {hit_keywords} found in text (signal only, floor={floor_lane})")
+
+    if not reasons:
+        reasons.append("no confirmed_paths/signal_paths/signal_keywords matched — mechanical floor is flow")
+    return lane, reasons
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="avc", description="AVC/XP repository harness")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -282,12 +356,39 @@ def main() -> int:
     validate.add_argument("path", help="YAML file path, or - for stdin")
 
     subparsers.add_parser("fingerprint", help="print current HEAD or an unborn-tree fingerprint")
+
+    classify = subparsers.add_parser(
+        "classify",
+        help="mechanical-only risk_triggers check: minimum lane the changed paths (and optional text) justify",
+    )
+    classify.add_argument("--paths", nargs="+", help="explicit paths to classify instead of the live git diff")
+    classify.add_argument("--against", help="git diff against this revision instead of the working tree vs HEAD")
+    classify.add_argument("--text", help="free text (e.g. story outcome/commit message) to scan for signal_keywords")
+    classify.add_argument("--json", action="store_true", help="emit machine-readable output")
     args = parser.parse_args()
 
     if args.command == "doctor":
         return run_doctor(offline=args.offline, strict=args.strict, json_output=args.json)
     if args.command == "fingerprint":
         print(tree_fingerprint())
+        return 0
+    if args.command == "classify":
+        if yaml is None:
+            print("PyYAML is required", file=sys.stderr)
+            return 2
+        config = load_yaml(ROOT / ".avc/config.yaml")
+        paths = args.paths if args.paths else changed_paths(args.against)
+        lane, reasons = classify_paths(config, paths, args.text)
+        if args.json:
+            print(json.dumps({"lane": lane, "paths": paths, "reasons": reasons}, indent=2))
+        else:
+            print(f"mechanical minimum lane: {lane}")
+            print(f"paths considered ({len(paths)}): {paths}")
+            for reason in reasons:
+                print(f"  - {reason}")
+            print("Note: this never detects semantic confirmed_impacts (e.g. \"changes auth")
+            print("enforcement\") — only a Navigator's judgment does. A lane below this")
+            print("mechanical minimum is worth a second look, not an automatic block.")
         return 0
     if args.command == "validate-result":
         if yaml is None:

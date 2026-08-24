@@ -182,6 +182,27 @@ class AvcHarnessTests(unittest.TestCase):
         errors = AVC.validate_agent_result(template)
         self.assertTrue(any("missing keys: head" in error for error in errors))
 
+    def test_classify_paths_naming_convention_is_signal_not_confirmation(self):
+        # Regression lock for the exact false positive the governed-lane
+        # pilot exists to prevent: a module merely *named* under an
+        # **/auth/** convention must land at guarded, never governed, with
+        # no confirmed_impacts/confirmed_paths in play.
+        config = yaml.safe_load((ROOT / ".avc/config.yaml").read_text(encoding="utf-8"))
+        lane, reasons = AVC.classify_paths(config, ["backend/src/auth/opensky.js"], None)
+        self.assertEqual(lane, "guarded")
+        self.assertTrue(any("signal_paths" in r for r in reasons))
+
+    def test_classify_paths_deploy_target_is_confirmed_governed(self):
+        config = yaml.safe_load((ROOT / ".avc/config.yaml").read_text(encoding="utf-8"))
+        lane, reasons = AVC.classify_paths(config, ["infra/production/deploy.yaml"], None)
+        self.assertEqual(lane, "governed")
+        self.assertTrue(any("confirmed_paths" in r for r in reasons))
+
+    def test_classify_paths_neutral_path_is_flow(self):
+        config = yaml.safe_load((ROOT / ".avc/config.yaml").read_text(encoding="utf-8"))
+        lane, _ = AVC.classify_paths(config, ["src/app.ts", "README.md"], None)
+        self.assertEqual(lane, "flow")
+
 
 if __name__ == "__main__":
     unittest.main()

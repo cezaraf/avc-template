@@ -49,6 +49,15 @@ Core commands:
   --node NODE --head HEAD --out .avc/evidence/<name>.json -- CMD [ARGS...]`
   (writes the `.avc/templates/evidence.json` shape; use it instead of
   hand-timing a command — `date`'s millisecond truncation is not portable).
+- Cross-check a lane classification mechanically: `python3 .avc/bin/avc.py
+  classify [--paths PATH...] [--against REV] [--text "..."]`. Matches
+  changed paths (default: working tree vs HEAD) and optional free text
+  against `risk_triggers.*.confirmed_paths/signal_paths/signal_keywords`
+  and prints the minimum lane those mechanical signals alone justify. It
+  never detects semantic `confirmed_impacts` (that stays the Navigator's
+  judgment) and never blocks anything by itself — if `classify` reports a
+  higher floor than the lane you're about to declare, that's worth a second
+  look before framing, not something to override silently.
 
 Product-specific install, test, build, lint, live-QA, and deployment commands
 must be filled in `.avc/config.yaml`; never invent successful output.

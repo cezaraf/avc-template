@@ -16,9 +16,13 @@ and known commands. Classify risk from `.avc/config.yaml: risk_triggers`:
 `confirmed_impacts` and a lane's `confirmed_paths` promote a lane on their
 own; `signal_keywords` and a lane's `signal_paths` are scouting signals only
 (never proof) — a path that only *names* a convention (e.g. `**/auth/**`)
-must not by itself force a lane the way a real confirmed impact does. Unknown
-risk is at least `guarded`. Promotion is autonomous for the Navigator;
-reduction is human-only.
+must not by itself force a lane the way a real confirmed impact does. Run
+`python3 .avc/bin/avc.py classify` as a mechanical cross-check on the
+path/keyword side of this before declaring the lane — it never replaces your
+judgment on semantic `confirmed_impacts`, but a floor it reports above what
+you're about to declare is worth a second look. Unknown risk is at least
+`guarded`. Promotion is autonomous for the Navigator; reduction is
+human-only.
 
 Create or amend `.avc/run.yaml` only as Navigator. Keep the oracle `draft`, the
 graph to one Scout node, and implementation inactive until baseline, frame, and
