@@ -7,9 +7,13 @@
 > e o pacote SDD está ausente/vazio — primeiro check de `risk_triggers` que
 > vira código de verdade, não só doutrina lida pelo agente. Conteúdo SDD em
 > si não foi inventado (é vendored de propósito, ver comentário em
-> `.avc/config.yaml: lanes.governed.sdd_package`). Achado 3 (nenhum outro
-> `risk_trigger` tem enforcement em código) segue aberto — mudança maior,
-> fora de escopo desta rodada.
+> `.avc/config.yaml: lanes.governed.sdd_package`). Achado 3 corrigido em
+> `437314e`: novo `avc.py classify` cruza paths/texto contra
+> `confirmed_paths`/`signal_paths`/`signal_keywords` de verdade e reporta a
+> lane mínima mecânica — escopo deliberadamente limitado (não detecta
+> `confirmed_impacts` semânticos, não bloqueia nada sozinho, é cross-check
+> pro Navigator, não gate automático). Testes de regressão travam a
+> distinção naming-vs-confirmed que causou os dois bugs originais.
 
 **Data**: 2026-08-24
 **Objetivo**: fechar a lacuna deixada pelos dois pilotos clean-room anteriores
