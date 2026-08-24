@@ -24,6 +24,12 @@ OpenCode, or any harness that reads `AGENTS.md`.
 
 ## Why
 
+<!-- avc-attribution:start -->
+> **Attribution.** The foundational idea behind Agile Vibe Coding (AVC) comes from [Fábio Akita](https://akitaonrails.com/).
+>
+> I, Cezar Augusto Ferreira, did not originate the concept. I turned those ideas into this practical template so I could apply them to my own projects in a structured, repeatable, and verifiable way.
+<!-- avc-attribution:end -->
+
 AI agents are fast at producing code and bad at knowing when to stop. The usual
 answers are both wrong:
 

@@ -169,6 +169,24 @@ class AvcHarnessTests(unittest.TestCase):
         self.assertGreaterEqual(word_count, 500)
         self.assertLessEqual(word_count, 900)
 
+    def test_readme_attributes_the_avc_idea_and_template_contribution(self):
+        text = (ROOT / "README.md").read_text(encoding="utf-8")
+        start_marker = "<!-- avc-attribution:start -->"
+        end_marker = "<!-- avc-attribution:end -->"
+        self.assertEqual(text.count(start_marker), 1)
+        self.assertEqual(text.count(end_marker), 1)
+
+        attribution = text.split(start_marker, 1)[1].split(end_marker, 1)[0]
+        for expected in (
+            "The foundational idea behind Agile Vibe Coding (AVC) comes from",
+            "Fábio Akita",
+            "I, Cezar Augusto Ferreira, did not originate the concept",
+            "I turned those ideas into this practical template",
+            "my own projects",
+            "structured, repeatable, and verifiable way",
+        ):
+            self.assertIn(expected, attribution)
+
     def test_path_guard_allows_active_scope_and_blocks_protected_paths(self):
         allowed = self.run_hook(
             "pre-tool-use",
