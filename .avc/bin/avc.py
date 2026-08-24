@@ -157,33 +157,27 @@ def run_doctor(*, offline: bool, strict: bool, json_output: bool) -> int:
 
     if isinstance(config, dict):
         project_name = config.get("project", {}).get("name")
+        operating_model = config.get("operating_model", {})
         provider = config.get("memory", {}).get("provider")
         commands = config.get("commands", {})
         empty_required = [key for key in ("baseline", "fast", "affected", "acceptance", "full_ci") if not commands.get(key)]
         valid_name = isinstance(project_name, str) and re.fullmatch(r"[a-z0-9][a-z0-9._-]*", project_name)
-        if valid_name and project_name != "replace-me" and provider == "ai-memory" and not empty_required:
-            add("PASS", "config-contract", "project, memory provider, and gates configured")
+        valid_model = (
+            operating_model.get("active") == "avc"
+            and "sdd" in operating_model.get("alternatives", [])
+            and operating_model.get("selection") == "mutually_exclusive"
+            and operating_model.get("switch_requires_human") is True
+            and operating_model.get("close_active_run_before_switch") is True
+        )
+        if valid_name and project_name != "replace-me" and valid_model and provider == "ai-memory" and not empty_required:
+            add("PASS", "config-contract", "project, exclusive AVC operating model, memory provider, and gates configured")
         else:
-            add("FAIL", "config-contract", f"project={project_name!r} provider={provider!r} empty={empty_required}")
+            add("FAIL", "config-contract", f"project={project_name!r} operating_model={operating_model!r} provider={provider!r} empty={empty_required}")
 
     if isinstance(run, dict):
         required_run = {"version", "run_id", "revision", "head", "story", "scope", "commands", "oracle", "authority", "state", "graph", "discoveries", "amendments", "evidence"}
         absent = sorted(required_run - set(run))
         add("FAIL" if absent else "PASS", "run-schema", ", ".join(absent) or "all top-level keys present")
-
-    if isinstance(config, dict) and isinstance(run, dict):
-        lane = (run.get("story") or {}).get("lane")
-        if lane == "governed":
-            sdd_package = ((config.get("lanes") or {}).get("governed") or {}).get("sdd_package")
-            if not sdd_package:
-                add("WARN", "sdd-package", "lane is governed but lanes.governed.sdd_package is not set in .avc/config.yaml")
-            else:
-                sdd_path = ROOT / sdd_package
-                entries = list(sdd_path.iterdir()) if sdd_path.is_dir() else []
-                if not entries:
-                    add("WARN", "sdd-package", f"lane is governed but {sdd_package} is missing or empty — vendor the applicable numbered SDD prompts (see cezaraf/sdd-template) before relying on this gate")
-                else:
-                    add("PASS", "sdd-package", f"{sdd_package} present ({len(entries)} entries)")
 
     codex_config_path = ROOT / ".codex/config.toml"
     if codex_config_path.is_file():

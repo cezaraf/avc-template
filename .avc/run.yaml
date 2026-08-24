@@ -1,7 +1,7 @@
 version: avc.dev/v1alpha1
 run_id: AVC-BOOTSTRAP-0001
-revision: 7
-head: d65b51fdc474bce8d95c09e7490bc04801e3b856
+revision: 14
+head: 49b99c699ff1e451f5bc683db38ec33e7cc3ce8e
 
 story:
   outcome: Any maintainer can install the AVC/XP kernel with ai-memory into a Git repository through a harness-agnostic installer and obtain the public GitHub template cezaraf/avc-template.
@@ -40,8 +40,16 @@ story:
       given: The publication is complete
       when: A consumer opens github.com/cezaraf/avc-template on main
       then: The repository is public, marked as a GitHub template, and exposes README.md and executable install.sh
+    - id: ACC-007
+      given: An AVC story is classified in the governed lane and the project has no SDD assets
+      when: The maintainer validates the AVC contract and runs the strict doctor
+      then: The native governed gates remain valid without requiring, loading, or invoking an SDD package
+    - id: ACC-008
+      given: A maintainer opens README.md to understand how to use the template
+      when: The How it works section is rendered
+      then: A Mermaid diagram shows the exclusive AVC-or-SDD choice, the AVC feedback loop, its three native risk lanes, human acceptance, and ai-memory continuity
   definition_of_done:
-    - ACC-001 through ACC-005 pass on the exact current HEAD
+    - ACC-001 through ACC-005, ACC-007, and ACC-008 pass on the exact current HEAD
     - ACC-006 passes against the public GitHub repository
     - An independent verifier reports no blocking finding
     - The human accepts the outcome
@@ -60,6 +68,8 @@ scope:
     - "START-HERE.md"
     - "PLATFORM-ADAPTERS.md"
     - "AGILE-VIBE-CODING-OS.md"
+    - "config.yaml"
+    - "docs/pilots/**"
   deny:
     - ".git/**"
     - "infra/**"
@@ -77,8 +87,8 @@ commands:
 oracle:
   status: frozen
   owner: verifier
-  frozen_at_revision: 5
-  acceptance_ids: [ACC-001, ACC-002, ACC-003, ACC-004, ACC-005, ACC-006]
+  frozen_at_revision: 12
+  acceptance_ids: [ACC-001, ACC-002, ACC-003, ACC-004, ACC-005, ACC-006, ACC-007, ACC-008]
   witness: executable
   commands:
     - ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_*.py"]
@@ -91,8 +101,8 @@ authority:
   oracle_change_after_freeze: human
   new_dependency: human
   migration: human
-  commit: approved_by_user_2026-08-21
-  push: approved_by_user_2026-08-21
+  commit: approved_by_user_2026-08-24
+  push: approved_by_user_2026-08-24
   public_repository_creation: approved_by_user_2026-08-21
   github_template_configuration: approved_by_user_2026-08-21
   merge: human
@@ -100,11 +110,12 @@ authority:
 
 state:
   phase: candidate
-  micro_phase: observe
+  micro_phase: review
   active_node: null
   blocked_by:
     - Independent review and human acceptance are pending.
   repair_cycles: 0
+  solo_agent: true
 
 graph:
   - id: N1
@@ -202,6 +213,93 @@ graph:
         observation: Public raw script downloaded the GitHub archive, installed a project-scoped kernel and Codex adapter, and passed offline doctor in a fresh Git repository.
       independence: The executable oracle was frozen before Builder work; a separate human or agent review remains pending.
     stop_condition: ACC-001 through ACC-006 have exact-HEAD local and remote evidence with no blocking finding
+  - id: N5
+    kind: acceptance
+    intent: Prove that the governed AVC lane is self-contained and never requires or invokes SDD
+    owner: verifier
+    depends_on: []
+    authorized_paths:
+      - ".avc/tests/**"
+    status: completed
+    created_from: ACC-007
+    attempt: 0
+    evidence:
+      command: ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_install.py", "-k", "governed_avc_contract"]
+      exit_code: 1
+      observation: The clean-room installed governed contract failed exactly because lanes.governed still contained sdd_package.
+    stop_condition: ACC-007 fails only because the current config and doctor still require the SDD package
+  - id: N6
+    kind: implementation
+    intent: Remove the SDD dependency from AVC and document AVC and SDD as mutually exclusive operating contracts
+    owner: builder
+    depends_on: [N5]
+    authorized_paths:
+      - ".avc/config.yaml"
+      - ".avc/bin/avc.py"
+      - ".avc/templates/config.avc.yaml"
+      - ".avc/templates/AGENTS.avc.md"
+      - "AGENTS.md"
+      - "README.md"
+      - "START-HERE.md"
+      - "PLATFORM-ADAPTERS.md"
+      - "AGILE-VIBE-CODING-OS.md"
+      - "config.yaml"
+      - "docs/pilots/2026-08-24-governed-lane-pilot.md"
+    status: completed
+    created_from: ACC-007
+    attempt: 0
+    evidence:
+      focused: .avc/evidence/acc-007-focused.json
+      full_ci: .avc/evidence/acc-007-ci.json
+      strict_doctor: .avc/evidence/acc-007-strict-doctor.json
+      live_memory: .avc/evidence/acc-007-live-memory.json
+      observation: The installed governed AVC contract passed without SDD; all 17 kernel tests, strict doctor, and live ai-memory QA passed on the changed tree.
+      independence: The executable oracle was frozen before implementation, but this solo-agent session does not satisfy independent review.
+    stop_condition: ACC-007 and the affected AVC checks pass without any SDD package or implicit AVC-to-SDD transition
+  - id: N7
+    kind: review
+    intent: Independently review AMD-003 and AMD-004 on the exact tree before human acceptance or publication
+    owner: reviewer
+    depends_on: [N6, N9]
+    authorized_paths: []
+    status: blocked
+    created_from: ACC-007
+    attempt: 0
+    evidence: null
+    stop_condition: A separate reviewer reports no blocking contract, documentation, regression, or portability finding
+  - id: N8
+    kind: acceptance
+    intent: Define an executable README contract for the mutually exclusive operating-model choice and AVC usage flow
+    owner: verifier
+    depends_on: [N6]
+    authorized_paths:
+      - ".avc/tests/**"
+    status: completed
+    created_from: ACC-008
+    attempt: 0
+    evidence:
+      command: ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_avc.py", "-k", "readme_mermaid"]
+      exit_code: 1
+      observation: The acceptance test failed only because README.md did not yet contain the marked Mermaid block.
+    stop_condition: ACC-008 fails only because the README does not yet contain the marked Mermaid flow
+  - id: N9
+    kind: implementation
+    intent: Add the Mermaid usage flow and remove the stale README statement that nested SDD under governed
+    owner: builder
+    depends_on: [N8]
+    authorized_paths:
+      - "README.md"
+    status: completed
+    created_from: ACC-008
+    attempt: 0
+    evidence:
+      focused: .avc/evidence/acc-008-focused.json
+      full_ci: .avc/evidence/acc-008-ci.json
+      strict_doctor: .avc/evidence/acc-008-strict-doctor.json
+      live_memory: .avc/evidence/acc-008-live-memory.json
+      observation: README contains the marked Mermaid flow; the executable contract, full kernel suite, strict doctor, and live ai-memory QA passed on the changed tree.
+      independence: This solo-agent session does not satisfy the separate review required before publication.
+    stop_condition: ACC-008 passes and the diagram remains consistent with the exclusive operating-model contract
 
 discoveries:
   - id: DISC-001
@@ -254,6 +352,60 @@ amendments:
       - ".avc/tests/test_avc.py"
       - ".ai-memory.toml"
     rollback: Revert the three identity fields together before publication; never split config, marker, and acceptance identity.
+  - id: AMD-003
+    status: accepted
+    approved_by: human
+    approved_at: 2026-08-24
+    evidence: The user explicitly required that the AVC contract must not force sdd-template and that a project use one operating model or the other.
+    previous:
+      governed_contract: lanes.governed.sdd_package required sdd/prompts and strict doctor failed when it was absent
+      oracle_status: frozen_at_revision_5
+      revision: 7
+    changes:
+      - Make all AVC lanes, including governed, self-contained.
+      - Remove the sdd_package check from configuration, templates, and doctor.
+      - Define AVC and SDD as mutually exclusive operating contracts selected explicitly by a human, with no automatic transition based on risk.
+      - Add ACC-007 and invalidate the previous frozen oracle for the affected contract surface.
+      - Expand scope only to the inert root config example and the governed pilot history needed to prevent contradictory current guidance.
+    authorized_protected_paths:
+      - ".avc/config.yaml"
+      - ".avc/bin/avc.py"
+      - ".avc/templates/config.avc.yaml"
+      - ".avc/templates/AGENTS.avc.md"
+      - ".avc/tests/test_avc.py"
+    rollback: Revert AMD-003 as one unit; never restore the doctor check without also restoring an explicit human-approved contract choice and acceptance oracle.
+  - id: AMD-004
+    status: accepted
+    approved_by: human
+    approved_at: 2026-08-24
+    evidence: The user explicitly requested a Mermaid diagram in README.md evidencing the usage flow.
+    previous:
+      readme_flow: A compact text-only AVC skill sequence with no explicit operating-model choice or ai-memory continuity edge
+      oracle_status: frozen_at_revision_9
+      revision: 10
+    changes:
+      - Add ACC-008 for a rendered Mermaid usage flow.
+      - Show AVC and SDD as mutually exclusive branches with no governed-to-SDD transition.
+      - Show the AVC risk lanes, feedback cycle, human acceptance, and ai-memory continuity.
+      - Remove the remaining stale README sentence that described SDD as a governed package.
+    authorized_protected_paths:
+      - ".avc/tests/test_avc.py"
+    rollback: Remove the marked Mermaid block and restore the prior compact text flow without reintroducing AVC-to-SDD coupling.
+  - id: AMD-005
+    status: accepted
+    approved_by: human
+    approved_at: 2026-08-24
+    evidence: The user explicitly instructed the agent to commit and push the completed AMD-003 and AMD-004 changes.
+    previous:
+      commit_authority: approved_by_user_2026-08-21
+      push_authority: approved_by_user_2026-08-21
+      publication_state: awaiting explicit authority for the current change set
+    changes:
+      - Authorize one semantic commit containing only the current AVC-SDD separation, Mermaid flow, tests, and governance records.
+      - Authorize pushing that commit to origin/main after fresh local gates and remote fast-forward validation pass.
+      - Keep independent review and final human outcome acceptance pending; publication is not acceptance.
+    authorized_protected_paths: []
+    rollback: Publish a normal follow-up revert commit if the public change must be undone; do not rewrite main history.
 evidence:
   ACC-001: N4.local_ci
   ACC-002: N4.live_memory
@@ -261,3 +413,5 @@ evidence:
   ACC-004: N4.local_ci and N4.remote_installer
   ACC-005: N4.local_ci
   ACC-006: N4.remote_repository and N4.remote_installer
+  ACC-007: N6.evidence
+  ACC-008: N9.evidence

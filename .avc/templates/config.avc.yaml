@@ -15,6 +15,16 @@ project:
   default_branch: main
   work_directory: .
 
+# AVC and SDD are alternative operating contracts, not nested phases. This
+# installed file activates AVC. Switching to SDD requires an explicit human
+# decision and closure or abandonment of the active AVC run first.
+operating_model:
+  active: avc
+  alternatives: [sdd]
+  selection: mutually_exclusive
+  switch_requires_human: true
+  close_active_run_before_switch: true
+
 commands:
   install:
     - ["replace-with-product-install-command"]
@@ -64,12 +74,6 @@ lanes:
     live_qa: required_when_observable
     require_rollback: true
     require_human_checkpoints: true
-    # Not auto-installed — vendor the applicable numbered prompts (00-10)
-    # from https://github.com/cezaraf/sdd-template into this path before a
-    # story actually reaches `governed`. `doctor` WARNs (FAILs under
-    # --strict) if the active story's lane is `governed` and this path is
-    # missing or empty; it stays silent for flow/guarded.
-    sdd_package: sdd/prompts
     evidence_retention_days: 365
 
 risk_triggers:

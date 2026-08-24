@@ -55,8 +55,11 @@ acceptance without the authority declared in `.avc/config.yaml`.
 Copy `AGENTS.md`, `.avc/`, `.agents/`, `.codex/`, `.ai-memory.toml`, and the
 relevant adapter documentation into a branch or worktree. Then replace project
 identity, commands, risk paths, acceptance, and the active run before building.
-Start with the six core AVC skills and keep SDD available as the `governed`
-package. The ai-memory project marker must be unique to the destination.
+Start with the core AVC skills. This template selects AVC as the exclusive
+operating contract; `governed` remains a native AVC lane and never invokes SDD.
+Choose SDD only as a separate human-selected workflow after closing or
+abandoning the active AVC run. The ai-memory project marker must be unique to
+the destination.
 
 ## Core rule
 

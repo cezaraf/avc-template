@@ -84,6 +84,51 @@ class PortableInstallerTests(unittest.TestCase):
             )
             self.assertEqual(doctor.returncode, 0, doctor.stdout + doctor.stderr)
 
+    def test_governed_avc_contract_is_valid_without_sdd(self):
+        with tempfile.TemporaryDirectory(prefix="avc-install-governed-") as directory:
+            target = self.make_target(Path(directory), "governed-app")
+            installed = self.run_installer(target, "generic")
+            self.assertEqual(installed.returncode, 0, installed.stderr)
+
+            run_path = target / ".avc/run.yaml"
+            run = yaml.safe_load(run_path.read_text(encoding="utf-8"))
+            run["story"]["lane"] = "governed"
+            run_path.write_text(yaml.safe_dump(run, sort_keys=False), encoding="utf-8")
+
+            binary = target / ".avc/tools/ai-memory/bin/ai-memory"
+            binary.parent.mkdir(parents=True)
+            binary.write_text("#!/bin/sh\nprintf 'ai-memory 1.29.0\\n'\n", encoding="utf-8")
+            binary.chmod(0o755)
+            subprocess.run(["git", "add", "."], cwd=target, check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=AVC Test",
+                    "-c",
+                    "user.email=avc-test@example.invalid",
+                    "commit",
+                    "-q",
+                    "-m",
+                    "test fixture",
+                ],
+                cwd=target,
+                check=True,
+            )
+
+            config = yaml.safe_load((target / ".avc/config.yaml").read_text(encoding="utf-8"))
+            self.assertNotIn("sdd_package", config["lanes"]["governed"])
+
+            doctor = subprocess.run(
+                ["python3", ".avc/bin/avc.py", "doctor", "--strict", "--offline"],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(doctor.returncode, 0, doctor.stdout + doctor.stderr)
+            self.assertNotIn("sdd-package", doctor.stdout)
+
     def test_dry_run_leaves_target_unchanged(self):
         with tempfile.TemporaryDirectory(prefix="avc-install-dry-") as directory:
             target = self.make_target(Path(directory))

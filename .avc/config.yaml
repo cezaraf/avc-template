@@ -5,6 +5,13 @@ project:
   default_branch: main
   work_directory: .
 
+operating_model:
+  active: avc
+  alternatives: [sdd]
+  selection: mutually_exclusive
+  switch_requires_human: true
+  close_active_run_before_switch: true
+
 commands:
   install:
     - ["./.avc/scripts/bootstrap-ai-memory.sh"]
@@ -50,12 +57,6 @@ lanes:
     live_qa: required_when_observable
     require_rollback: true
     require_human_checkpoints: true
-    # Not auto-installed — vendor the applicable numbered prompts (00-10)
-    # from https://github.com/cezaraf/sdd-template into this path before a
-    # story actually reaches `governed`. `doctor` WARNs (FAILs under
-    # --strict) if the active story's lane is `governed` and this path is
-    # missing or empty; it stays silent for flow/guarded.
-    sdd_package: sdd/prompts
     evidence_retention_days: 365
 
 risk_triggers:

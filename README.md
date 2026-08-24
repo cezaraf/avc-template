@@ -40,8 +40,9 @@ Governance is a dial, not a toll booth — it escalates automatically when a cha
 touches authentication, money, tenant boundaries, schemas, or production
 infrastructure.
 
-Spec-driven development is not thrown away. It becomes the `governed` package,
-triggered by risk instead of by ceremony.
+Spec-driven development is not thrown away. It remains a separate operating
+contract that a team may choose instead of AVC. The two workflows are mutually
+exclusive; no AVC lane invokes SDD.
 
 ## Quick start (60 seconds)
 
@@ -75,11 +76,42 @@ distribution's own bootstrap state.
 
 Ask your agent for `avc-start` and the kernel drives the loop:
 
-```text
-avc-start ──▶ avc-scout ──▶ avc-freeze-oracle ──▶ avc-build-slice
-                                                        │
-              human acceptance ◀── avc-review ◀── avc-verify
+<!-- avc-flow-diagram:start -->
+```mermaid
+flowchart TD
+    HUMAN(["Human defines outcome, value, and limits"]) --> CHOICE{"Choose one operating contract"}
+    CHOICE -->|AVC| START["avc-start"]
+    CHOICE -->|SDD| SDD["Use the SDD workflow<br/>as a separate contract"]
+    SDD --> SDD_DONE(["SDD owns its own state and gates"])
+
+    MEMORY[("ai-memory")] -. "Historical context, never authority" .-> START
+    START --> SCOUT["avc-scout"]
+    SCOUT --> LANE{"Classify risk lane"}
+    LANE -->|flow| ORACLE["avc-freeze-oracle"]
+    LANE -->|guarded| ORACLE
+    LANE -->|governed| ORACLE
+
+    ORACLE --> BUILD["avc-build-slice"]
+    BUILD --> VERIFY["avc-verify"]
+    VERIFY -->|fails| DECIDE{"Repair or amendment?"}
+    DECIDE -->|repair inside the contract| BUILD
+    DECIDE -->|scope, lane, or oracle changes| AMEND["avc-amend"]
+    AMEND --> SCOUT
+
+    VERIFY -->|passes| REVIEW["avc-review<br/>depth follows the lane"]
+    REVIEW -->|blocking finding| DECIDE
+    REVIEW -->|passes| LIVE["avc-live-qa<br/>when required"]
+    LIVE --> ACCEPT{"Human accepts the outcome?"}
+    ACCEPT -->|no| AMEND
+    ACCEPT -->|yes| RETRO["avc-retro"]
+    RETRO --> DONE(["Integrate and observe"])
+    DONE -. "Sanitized handoff and durable learning" .-> MEMORY
 ```
+<!-- avc-flow-diagram:end -->
+
+The SDD branch deliberately has no edge back into an AVC lane: choosing SDD
+means using its own workflow, while `flow`, `guarded`, and `governed` remain
+native AVC paths.
 
 | Step | What happens |
 | --- | --- |
@@ -113,7 +145,7 @@ paths — keywords alone are only a signal, never a verdict.
 | --- | --- | --- | --- |
 | `flow` | Everything else | Light | First executable signal in minutes |
 | `guarded` | Public API, event contract, schema, new dependency, concurrency, hot path | Independent | Rollback required |
-| `governed` | Auth, money, PII, tenant boundary, destructive migration, prod secrets | Independent specialist | Human checkpoints, live QA, SDD package |
+| `governed` | Auth, money, PII, tenant boundary, destructive migration, prod secrets | Independent specialist | Human checkpoints, live QA, rollback evidence |
 
 Escalation is automatic. **De-escalation is not** — lane reduction, scope
 expansion, oracle changes after freeze, dependencies, migrations, gate waivers,
@@ -187,8 +219,10 @@ adapter.
 ## FAQ
 
 **Is this a replacement for spec-driven development (SDD)?**
-No. It repositions it. SDD stops being the mandatory funnel for every change and
-becomes the `governed` package, activated by real risk.
+It is an alternative operating contract. This template selects AVC; none of its
+lanes, including `governed`, installs or invokes SDD. A team may choose SDD
+instead, but the two workflows do not run as nested stages: switching requires
+an explicit human decision and closure or abandonment of the active AVC run.
 
 **Does "vibe coding" mean no tests?**
 The opposite. Here *vibe* means continuous human direction and empirical

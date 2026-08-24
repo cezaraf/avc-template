@@ -2,13 +2,12 @@
 
 > **Status (2026-08-24, mesmo dia)**: achado 1 (`protected_paths` vs.
 > `config.yaml`) já tinha sido corrigido no mesmo commit deste relatório
-> (`8153800`). Achado 2 (`sdd/prompts` ausente) corrigido em `19f4d25`:
-> `doctor` agora WARN (FAIL sob `--strict`) quando a lane ativa é `governed`
-> e o pacote SDD está ausente/vazio — primeiro check de `risk_triggers` que
-> vira código de verdade, não só doutrina lida pelo agente. Conteúdo SDD em
-> si não foi inventado (é vendored de propósito, ver comentário em
-> `.avc/config.yaml: lanes.governed.sdd_package`). Achado 3 corrigido em
-> `437314e`: novo `avc.py classify` cruza paths/texto contra
+> (`8153800`). A correção inicial do achado 2 em `19f4d25` tornou o pacote SDD
+> obrigatório em `governed`; essa decisão foi posteriormente substituída por
+> `AMD-003` em `.avc/run.yaml`. O contrato atual mantém `governed` nativo no
+> AVC, não instala nem invoca SDD e exige escolha humana mutuamente exclusiva
+> entre os dois modelos. Achado 3 corrigido em `437314e`: novo `avc.py
+> classify` cruza paths/texto contra
 > `confirmed_paths`/`signal_paths`/`signal_keywords` de verdade e reporta a
 > lane mínima mecânica — escopo deliberadamente limitado (não detecta
 > `confirmed_impacts` semânticos, não bloqueia nada sozinho, é cross-check
@@ -89,11 +88,10 @@ próprio `run.yaml`/fluxo) — é um substituto ad-hoc, não a coisa em si.
    `run.yaml: commands` em vez de `config.yaml`. **Corrigido nesta sessão**:
    `AGENTS.avc.md` agora declara essa substituição inicial como exceção
    pré-autorizada a `protected_paths`, não um gate `human` separado.
-2. **`sdd_package: sdd/prompts`** (exigido pela lane `governed`) não existe
-   em lugar nenhum do kernel instalado. Achado registrado, não inventado
-   conteúdo pra tampar. Fica como item de backlog — decidir se cria um
-   template mínimo em `.avc/templates/` ou remove a exigência do config
-   pra projetos que não usam SDD.
+2. **`sdd_package: sdd/prompts`** (então exigido pela lane `governed`) não
+   existia em lugar nenhum do kernel instalado. A decisão posterior foi
+   remover a exigência, não inventar conteúdo para tampá-la: AVC e SDD são
+   contratos alternativos e `governed` permanece integralmente AVC.
 3. Confirmação do achado já conhecido: **nada no código lê
    `risk_triggers`** — a classificação `governed` correta aqui saiu de o
    builder ler `config.yaml` e `avc-start/SKILL.md` (já corrigido na sessão

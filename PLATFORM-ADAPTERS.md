@@ -114,7 +114,8 @@ Create a short `CLAUDE.md`:
 
 Read and follow `AGENTS.md`. The active story is `.avc/run.yaml`, policy is
 `.avc/config.yaml`, and role authority lives in `.avc/roles/`. Load skills on
-demand. Do not preload all AVC or SDD documents.
+demand. This launcher selects AVC; do not load documents or skills from the
+alternative SDD operating contract.
 ```
 
 Define agents under `.claude/agents/`.

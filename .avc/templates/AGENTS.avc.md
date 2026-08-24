@@ -4,6 +4,10 @@
 This repository uses Agile Vibe Coding with small vertical slices, executable
 feedback, independent verification, and risk-adaptive governance.
 
+AVC and SDD are mutually exclusive operating contracts. This installed contract
+selects AVC; no AVC lane loads or invokes SDD. Switching to SDD requires an
+explicit human decision and closure or abandonment of the active AVC run first.
+
 - Read `.avc/config.yaml` and `.avc/run.yaml` before changing the project.
 - `.avc/run.yaml` is operational state. Only the Navigator changes outcome,
   scope, lane, authority, acceptance, graph state, or amendments.

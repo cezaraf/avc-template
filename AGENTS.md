@@ -78,8 +78,11 @@ workflow. Never invent successful output.
 - `governed`: auth, billing, PII, tenant isolation, destructive migration,
   secrets, compliance, critical infrastructure, high blast radius.
 
-Unknown risk does not qualify for `flow`. The current SDD workflow is available
-as a `governed` package.
+Unknown risk does not qualify for `flow`. SDD is recognized only as an
+alternative operating contract, not as an AVC lane package. AVC and SDD
+are mutually exclusive: an active AVC run never loads or invokes SDD, including
+in `governed`. Switching models requires an explicit human decision and closing
+or abandoning the active AVC run first.
 
 Risk vocabulary is a signal for scouting, not automatic proof. Promote
 automatically only for a confirmed impact, a changed sensitive path, or an

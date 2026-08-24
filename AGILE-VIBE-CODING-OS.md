@@ -12,13 +12,14 @@ operating system de engenharia baseado em XP:
 > fatias verticais pequenas; testes, CI, runtime e verificadores independentes
 > produzem o feedback que dirige o próximo passo.
 
-O SDD atual não deve ser descartado. Ele deve mudar de posição:
+O SDD atual não deve ser descartado. Ele deve ocupar uma posição alternativa:
 
 - deixa de ser o funil obrigatório para toda mudança;
-- passa a ser um pacote de governança acionado por risco;
+- passa a ser um contrato operacional escolhido explicitamente no lugar do AVC,
+  nunca um pacote acionado por uma lane;
 - preserva seus melhores mecanismos — contratos vivos, verificadores isolados,
-  severidade, autorização e rastreabilidade — apenas quando eles reduzem um
-  risco concreto;
+  severidade, autorização e rastreabilidade — para projetos que escolherem
+  operar pelo SDD;
 - deixa de exigir que uma representação textual do futuro esteja “PRONTA”
   antes de obtermos a primeira evidência executável.
 
@@ -40,7 +41,8 @@ O sistema é extremamente completo por **composição**, não por obrigatoriedad
 - especialistas e artefatos ativados sob demanda.
 
 O caminho `flow` precisa chegar ao primeiro sinal executável em minutos. A
-faixa `governed` pode usar praticamente todo o SDD atual.
+faixa `governed` mantém todo o rigor necessário dentro do próprio AVC, sem
+carregar prompts ou etapas do SDD.
 
 ---
 
@@ -211,7 +213,9 @@ As **extensões** são ativadas por gatilho:
 - performance budget;
 - acessibilidade;
 - rollout, canary e rollback;
-- SDD completo.
+
+SDD não é uma extensão dessa lista. Ele é um contrato operacional alternativo:
+se for escolhido, substitui o run AVC ativo em vez de ser carregado por ele.
 
 ---
 
@@ -257,7 +261,6 @@ ou mudança irreversível.
 
 Adiciona:
 
-- pacote seletivo ou completo do SDD atual;
 - threat model;
 - contrato explícito;
 - plano e dry-run de migração;
@@ -1039,7 +1042,7 @@ opencode.json
 | Accessibility checklist | UI relevante |
 | Spike note | descoberta que precisa sobreviver à sessão |
 | Incident report | falha relevante em produção |
-| Full SDD | risco extremo ou exigência contratual/regulatória |
+| Formal assurance plan | risco extremo ou exigência contratual/regulatória |
 
 ### 16.3 O que não existe no `flow`
 
@@ -1175,7 +1178,7 @@ Primeiro sinal executável: alvo de até 15 minutos.
 ### 18.6 Migração/segurança/billing
 
 1. Promover para `governed`.
-2. Rodar SDD seletivo ou completo.
+2. Ativar os gates nativos de governança aplicáveis.
 3. Threat model/impact map/migration plan.
 4. Dry-run e rollback testado.
 5. Checkpoint humano antes de efeito irreversível.
@@ -1288,7 +1291,11 @@ Ordem de contramedidas se velocidade subir e qualidade cair:
 
 ---
 
-## 20. Migração do `sdd-template`
+## 20. Convivência e migração do `sdd-template`
+
+Esta seção descreve uma migração entre contratos operacionais, não uma chamada
+do SDD por uma lane AVC. Em qualquer história há exatamente um modelo ativo. A
+troca exige decisão humana explícita e encerramento ou abandono do run anterior.
 
 ### 20.1 O que preservar
 
@@ -1332,10 +1339,12 @@ Ordem de contramedidas se velocidade subir e qualidade cair:
 
 No período de transição:
 
-- `flow` usa `.avc/`;
-- `guarded` reaproveita contratos/ADRs do SDD;
-- `governed` chama os prompts 00–10 aplicáveis;
-- o instalador atual pode ganhar um modo `--avc`;
+- uma história escolhe AVC ou SDD, nunca ambos;
+- se AVC estiver ativo, `flow`, `guarded` e `governed` usam apenas o contrato
+  `.avc/` e seus artefatos sob demanda;
+- se SDD estiver ativo, os prompts e estados do SDD são sua fonte operacional;
+- a troca entre modelos fecha ou abandona o estado anterior antes de ativar o
+  outro;
 - não migrar histórico antigo;
 - não reescrever contratos vivos sem uma entrega real.
 
@@ -1383,7 +1392,7 @@ Dogfood em uma história real no primeiro dia.
 
 ### Fase 4 — governed
 
-- encapsular o SDD atual como pacote de risco;
+- completar os gates nativos de risco do AVC sem dependência de outro modelo;
 - threat/migration/security gates;
 - approvals e evidence retention;
 - integração com GitHub checks/PRs.
@@ -1458,7 +1467,8 @@ Apesar de todo o catálogo, comece com:
 - CI;
 - um fluxo de live QA;
 - `flow` como default;
-- `governed` chamando o SDD existente.
+- `governed` completo dentro do AVC;
+- escolha explícita e mutuamente exclusiva entre AVC e SDD.
 
 O starter kit ao lado deste documento contém contratos copiáveis. Ele é uma
 referência; deve ser adaptado aos comandos e à arquitetura do projeto antes de
