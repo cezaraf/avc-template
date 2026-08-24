@@ -20,6 +20,11 @@ story:
     - Replace this bootstrap contract with a real accepted outcome
 
 scope:
+  # This starting surface is intentionally narrow and generic. A real project
+  # layout (e.g. backend/**+frontend/**, packages/**, apps/**) will very
+  # likely not fit it — expanding scope.allow on the first slice is the
+  # normal, expected first Navigator action, not a blocker to route around
+  # or a sign something is wrong.
   allow:
     - "AGENTS.md"
     - "START-HERE.md"
@@ -68,6 +73,11 @@ state:
   blocked_by:
     - Run avc-start to replace the bootstrap outcome and product commands.
   repair_cycles: 0
+  # true when one agent performs the whole lifecycle by switching roles
+  # (no separate Navigator/Scout/Builder/Verifier/Reviewer instances). When
+  # true, `guarded`/`governed` independence gates are self-attested, not
+  # independently verified — say so in evidence and delegated results.
+  solo_agent: false
 
 graph:
   - id: N1

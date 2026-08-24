@@ -1,32 +1,46 @@
 version: avc.dev/v1alpha1
 
+# This file is what `install.sh` writes into a target repository as
+# `.avc/config.yaml` (only `project.name` is substituted). It is deliberately
+# NOT the avc-template kernel's own live config (that one lives at the
+# repository root's `.avc/config.yaml` and is correct only for validating the
+# kernel installation itself). Commands below that are product-shaped are
+# left as loud, non-empty placeholders — never a silently-passing kernel
+# self-check — so `doctor` keeps reporting PASS on schema shape while
+# actually *running* any of them fails until a maintainer or avc-start
+# replaces them with the real product command.
+
 project:
-  name: avc-template
+  name: replace-me
   default_branch: main
   work_directory: .
 
 commands:
   install:
-    - ["./.avc/scripts/bootstrap-ai-memory.sh"]
+    - ["replace-with-product-install-command"]
   start:
-    - ["docker", "compose", "-p", "avc-ai-memory", "-f", ".avc/ai-memory/compose.yaml", "up", "-d"]
+    - ["replace-with-product-dev-server-command"]
   baseline:
     - ["python3", ".avc/bin/avc.py", "doctor", "--offline"]
   fast:
-    - ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_*.py"]
+    - ["replace-with-product-fast-feedback-command"]
   affected:
-    - ["python3", ".avc/bin/avc.py", "doctor"]
+    - ["replace-with-product-affected-tests-command"]
   acceptance:
-    - ["python3", ".avc/bin/avc.py", "doctor", "--strict"]
+    - ["replace-with-product-acceptance-command"]
   full_ci:
+    # Kernel self-check only (compiles/tests/doctors the AVC installation).
+    # It proves nothing about product code — append the product's own CI
+    # command as a second entry once one exists.
     - ["./.avc/scripts/ci.sh"]
+    - ["replace-with-product-full-ci-command"]
   format: []
   lint:
-    - ["python3", "-m", "compileall", "-q", ".avc/bin", ".avc/hooks", ".avc/tests"]
+    - ["replace-with-product-lint-command"]
   typecheck: []
   build: []
   live_qa:
-    - ["./.avc/scripts/qa-ai-memory.sh"]
+    - ["replace-with-product-live-qa-command"]
 
 lanes:
   default: flow
@@ -140,9 +154,15 @@ evidence:
   require_exit_code: true
   stale_on_head_change: affected
   accepted_statuses: [PASS, FAIL, BLOCKED, NEEDS_AMENDMENT]
-  # Gitignored deliberately — see .avc/templates/config.avc.yaml's evidence
-  # comment for the HEAD-lag reasoning. Retention is satisfied via CI
-  # artifact upload, not git history.
+  # `.avc/evidence/` is intentionally gitignored (see .gitignore's
+  # avc-template block). Committing evidence would make every evidence file
+  # describe the HEAD *before* its own commit, not the HEAD it actually
+  # ran against — a self-referential lag, not an audit trail. Satisfy
+  # `evidence_retention_days` by uploading `.avc/evidence/` as a CI artifact
+  # (retained for the lane's window) instead of committing it. If a project
+  # genuinely needs evidence readable from a fresh clone, commit a separate
+  # append-only index of {run_id, head, command, exit_code, artifact_url}
+  # pointing at externally retained artifacts — never the raw payloads.
   committed: false
 
 memory:

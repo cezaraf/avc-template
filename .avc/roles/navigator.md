@@ -32,6 +32,15 @@ outcome, acceptance ids, allowed/denied paths, relevant files, commands,
 invariants, stop conditions, and the canonical result schema. Persist state
 changes serially; agents never race on `.avc/run.yaml`.
 
+## Solo-agent mode
+
+If no separate agent instances exist to fill Navigator/Scout/Builder/
+Verifier/Reviewer and one agent performs the whole lifecycle by switching
+roles, set `state.solo_agent: true`. `guarded`'s `review: independent` and
+`governed`'s `review: independent_specialist` are not satisfied by a single
+agent attesting to its own prior work under a different role label — record
+that explicitly rather than letting the gate appear silently satisfied.
+
 ## Stop
 
 Stop for a human decision when authority is missing. Stop for amendment when

@@ -226,7 +226,7 @@ if [[ ! -f "${target_dir}/.avc/config.yaml" || "${force}" -eq 1 ]]; then
     $0 == "project:" { in_project = 1; print; next }
     in_project && $0 ~ /^  name:/ { print "  name: " project; in_project = 0; next }
     { print }
-  ' "${source_root}/.avc/config.yaml" > "${generated_config}"
+  ' "${source_root}/.avc/templates/config.avc.yaml" > "${generated_config}"
   plan "write .avc/config.yaml for ${project_name}"
   if [[ "${dry_run}" -eq 0 ]]; then
     cp -- "${generated_config}" "${target_dir}/.avc/config.yaml"

@@ -15,9 +15,13 @@ selects only the requested harness adapters.
    rollout.
 2. `AGENTS.md` — active project instructions and ai-memory routing.
 3. `.avc/config.yaml` — commands, lanes, risk triggers, budgets, and
-   authority.
-4. `.avc/run.yaml` — the single active operational state; use
-   `.avc/run.example.yaml` when copying the starter.
+   authority. A fresh install generates it from `.avc/templates/config.avc.yaml`,
+   not from this repository's own `.avc/config.yaml` (which is correct only
+   for validating avc-template's own kernel installation).
+4. `.avc/run.yaml` — the single active operational state; a fresh install
+   generates it from `.avc/templates/run.bootstrap.yaml` (`.avc/run.example.yaml`
+   at the root is a longer, hand-annotated reference for the same shape, not
+   what the installer copies).
 5. `.avc/roles/` — five canonical authority contracts.
 6. `.agents/skills/` — ten AVC workflows plus ai-memory's managed routing
    skills.
@@ -25,9 +29,11 @@ selects only the requested harness adapters.
    required MCP.
 8. `PLATFORM-ADAPTERS.md` — Codex, Claude Code, and OpenCode mappings.
 
-The root `config.yaml` and `run.example.yaml` are inert source examples retained
-from the original design package. Runtime tools read only `.avc/config.yaml`
-and `.avc/run.yaml`.
+The root `config.yaml` and `run.example.yaml` are inert reference examples, not
+what a fresh install writes. `install.sh` writes a target's `.avc/config.yaml`
+and `.avc/run.yaml` from `.avc/templates/config.avc.yaml` and
+`.avc/templates/run.bootstrap.yaml` respectively; both live under `.avc/templates/`
+alongside the installer's other product templates.
 
 ## Bootstrap this repository
 
