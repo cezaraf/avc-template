@@ -136,6 +136,108 @@ Everything the run depends on is a file you can read and diff:
 AGENTS.md             managed instruction blocks your harness already reads
 ```
 
+<!-- avc-story:start -->
+## The Next Signal: AVC in Practice
+
+When Helena opened the repository for a small rehearsal-planning application
+called *Ensemble*, she did not ask the agent to “build the feature.” She gave it
+one observable outcome instead:
+
+> A musician can cancel attendance at a rehearsal and immediately see the seat
+> become available again.
+
+That was how AVC began: not with a list of files, but with value someone could
+observe.
+
+Before touching the code, Helena chose the operating contract:
+**AVC, not SDD**. Either model could serve the project, but never at the same
+time. The choice lived in `.avc/config.yaml`; the single active story lived in
+`.avc/run.yaml`.
+
+She invoked `avc-start`. The agent turned her request into a small capsule:
+outcome, examples, boundaries, and non-goals. They would not add notifications,
+a waiting list, or billing. Success meant that cancellation remained visible in
+the musician's history while another musician could see one newly available
+seat.
+
+The story entered the `guarded` lane. It crossed the interface, API, and
+database, changing persistence and a contract between components. It was not as
+sensitive as authentication or money, but it required rollback, independent
+review, and observation through the real application.
+
+Then came `avc-scout`.
+
+The scout did not read the whole repository. It found the rehearsal screen, the
+participant endpoint, the enrollment table, and the nearest tests. It also
+discovered that cancellation must not delete a row: the historical record had
+to remain with a `cancelled` state. That discovery did not become code. It
+became a fact in the active run.
+
+Next, a verifier took `avc-freeze-oracle`. Before the Builder wrote production
+code, the verifier created one executable example:
+
+> Given a full rehearsal and a confirmed musician, when that musician cancels,
+> the enrollment remains in history as cancelled and available seats increase
+> by exactly one.
+
+The test failed for the intended reason. The oracle was frozen. From then on,
+the Builder could satisfy it, but could not weaken it.
+
+Only then did `avc-build-slice` begin. The Builder received an exact file
+allowlist, adjusted the endpoint and persistence, then updated the screen. Each
+step followed the same rhythm: red, green, refactor. It ran the smallest useful
+check after every change and resisted the temptation to redesign neighboring
+modules.
+
+Halfway through, a new idea appeared: notify every musician when a seat became
+free.
+
+Helena liked it, but answered, “Not in this story.”
+
+AVC protected the work from its own enthusiasm. Notifications would change
+scope, dependencies, and acceptance. Adding them required `avc-amend`, a new
+contract revision, and human authority. The idea survived, but the active story
+did not drift silently.
+
+When the oracle turned green, `avc-verify` ran the focused tests, affected
+checks, doctor, and full suite against one exact tree. Its evidence recorded the
+`HEAD`, command arguments, environment, duration, exit code, and artifacts.
+“It worked for me” was replaced by a reproducible statement.
+
+Then `avc-review` read the diff independently, without trusting the Builder's
+summary. The reviewer found that two simultaneous cancellations could release
+the same seat twice. The finding returned to the loop as a reproducible case,
+not a vague objection. The Builder repaired the cause, and verification ran
+again on the new tree.
+
+Finally, Helena opened the application as a user. She cancelled attendance,
+saw the state change, and opened another session where the seat was available.
+This was `avc-live-qa`: behavior witnessed through the consumer surface,
+separate from local tests and CI.
+
+Every gate had passed, but the agent still did not declare victory.
+
+“Do you accept the outcome?” it asked.
+
+Helena compared the result with the value she had requested, not with the
+amount of code produced. “I accept it.”
+
+Only then did `avc-retro` examine the journey. The concurrency failure found in
+review became a permanent test. No long rule was necessary; the executable
+check was the smallest durable form of that lesson.
+
+Throughout the work, ai-memory carried decisions between sessions. It recalled
+why cancelled enrollments were retained and prepared the next handoff. Yet its
+role remained **historical context, not authority**. Current instructions, the
+active contract, the exact tree, and human decisions always outranked memory.
+
+The next morning, another agent opened the repository. It did not need to
+reconstruct the past or invent the future. It read the contract, consulted the
+memory as evidence, and asked the question that keeps AVC moving:
+
+> What is the next small outcome someone needs to observe?
+<!-- avc-story:end -->
+
 ## Risk lanes: governance that scales with blast radius
 
 One dial, three settings. Risk is inferred from confirmed impact and changed
