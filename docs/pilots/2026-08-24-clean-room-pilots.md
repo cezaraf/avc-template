@@ -1,5 +1,18 @@
 # Pilotos clean-room AVC/XP — AeroRadar e Painel de Clima
 
+> **Status (2026-08-24, mesmo dia)**: achados 1–7 corrigidos em `e0c5f93` e
+> `eaf54cc` (config source-of-truth, split `confirmed_paths`/`signal_paths`,
+> fallback de skill documentado, `state.solo_agent`, `record-evidence.sh`
+> canônico). Validado com instalação real em repo novo + experimento rápido
+> dedicado (`~/desenvolvimento/avc-fix-validation/VALIDATION-LOG.md`), que por
+> sua vez achou e corrigiu dois bugs novos no próprio fix (wording obsoleto em
+> `avc-start/SKILL.md`, texto de uso incorreto em `record-evidence.sh`) — ver
+> `eaf54cc`. Segue em aberto, deliberadamente: nenhum código lê
+> `risk_triggers` (classificação continua sendo doutrina interpretada pelo
+> agente, não mecanicamente aplicada), e a lane `governed` ainda não foi
+> testada com um piloto autônomo de verdade — isso exige humano presente,
+> não delegação.
+
 **Data**: 2026-08-24
 **Objetivo do experimento**: validar se a metodologia Agile Vibe Coding (AVC)
 funciona de fato como "XP com IA de par" — pequenas fatias verticais, oráculo
