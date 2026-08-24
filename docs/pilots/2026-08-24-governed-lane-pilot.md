@@ -1,5 +1,16 @@
 # Piloto lane governed — human gates de verdade
 
+> **Status (2026-08-24, mesmo dia)**: achado 1 (`protected_paths` vs.
+> `config.yaml`) já tinha sido corrigido no mesmo commit deste relatório
+> (`8153800`). Achado 2 (`sdd/prompts` ausente) corrigido em `19f4d25`:
+> `doctor` agora WARN (FAIL sob `--strict`) quando a lane ativa é `governed`
+> e o pacote SDD está ausente/vazio — primeiro check de `risk_triggers` que
+> vira código de verdade, não só doutrina lida pelo agente. Conteúdo SDD em
+> si não foi inventado (é vendored de propósito, ver comentário em
+> `.avc/config.yaml: lanes.governed.sdd_package`). Achado 3 (nenhum outro
+> `risk_trigger` tem enforcement em código) segue aberto — mudança maior,
+> fora de escopo desta rodada.
+
 **Data**: 2026-08-24
 **Objetivo**: fechar a lacuna deixada pelos dois pilotos clean-room anteriores
 (`docs/pilots/2026-08-24-clean-room-pilots.md`) — nenhum deles tocou a lane
