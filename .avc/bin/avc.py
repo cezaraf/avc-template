@@ -170,6 +170,20 @@ def run_doctor(*, offline: bool, strict: bool, json_output: bool) -> int:
         absent = sorted(required_run - set(run))
         add("FAIL" if absent else "PASS", "run-schema", ", ".join(absent) or "all top-level keys present")
 
+    if isinstance(config, dict) and isinstance(run, dict):
+        lane = (run.get("story") or {}).get("lane")
+        if lane == "governed":
+            sdd_package = ((config.get("lanes") or {}).get("governed") or {}).get("sdd_package")
+            if not sdd_package:
+                add("WARN", "sdd-package", "lane is governed but lanes.governed.sdd_package is not set in .avc/config.yaml")
+            else:
+                sdd_path = ROOT / sdd_package
+                entries = list(sdd_path.iterdir()) if sdd_path.is_dir() else []
+                if not entries:
+                    add("WARN", "sdd-package", f"lane is governed but {sdd_package} is missing or empty — vendor the applicable numbered SDD prompts (see cezaraf/sdd-template) before relying on this gate")
+                else:
+                    add("PASS", "sdd-package", f"{sdd_package} present ({len(entries)} entries)")
+
     codex_config_path = ROOT / ".codex/config.toml"
     if codex_config_path.is_file():
         try:
