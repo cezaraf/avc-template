@@ -1,7 +1,7 @@
 version: avc.dev/v1alpha1
 run_id: AVC-BOOTSTRAP-0001
-revision: 14
-head: 49b99c699ff1e451f5bc683db38ec33e7cc3ce8e
+revision: 18
+head: bd606c753071686ff30854e80bdad09a74217ab9
 
 story:
   outcome: Any maintainer can install the AVC/XP kernel with ai-memory into a Git repository through a harness-agnostic installer and obtain the public GitHub template cezaraf/avc-template.
@@ -48,8 +48,12 @@ story:
       given: A maintainer opens README.md to understand how to use the template
       when: The How it works section is rendered
       then: A Mermaid diagram shows the exclusive AVC-or-SDD choice, the AVC feedback loop, its three native risk lanes, human acceptance, and ai-memory continuity
+    - id: ACC-009
+      given: A reader wants a concrete but concise example of using AVC
+      when: The reader opens the English narrative in README.md
+      then: A short development story demonstrates framing, scouting, risk, frozen acceptance, building, verification, review, live QA, amendment, human acceptance, retro, and ai-memory continuity
   definition_of_done:
-    - ACC-001 through ACC-005, ACC-007, and ACC-008 pass on the exact current HEAD
+    - ACC-001 through ACC-005 and ACC-007 through ACC-009 pass on the exact current HEAD
     - ACC-006 passes against the public GitHub repository
     - An independent verifier reports no blocking finding
     - The human accepts the outcome
@@ -87,8 +91,8 @@ commands:
 oracle:
   status: frozen
   owner: verifier
-  frozen_at_revision: 12
-  acceptance_ids: [ACC-001, ACC-002, ACC-003, ACC-004, ACC-005, ACC-006, ACC-007, ACC-008]
+  frozen_at_revision: 16
+  acceptance_ids: [ACC-001, ACC-002, ACC-003, ACC-004, ACC-005, ACC-006, ACC-007, ACC-008, ACC-009]
   witness: executable
   commands:
     - ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_*.py"]
@@ -103,6 +107,7 @@ authority:
   migration: human
   commit: approved_by_user_2026-08-24
   push: approved_by_user_2026-08-24
+  pull_request: approved_by_user_2026-08-24
   public_repository_creation: approved_by_user_2026-08-21
   github_template_configuration: approved_by_user_2026-08-21
   merge: human
@@ -258,9 +263,9 @@ graph:
     stop_condition: ACC-007 and the affected AVC checks pass without any SDD package or implicit AVC-to-SDD transition
   - id: N7
     kind: review
-    intent: Independently review AMD-003 and AMD-004 on the exact tree before human acceptance or publication
+    intent: Independently review AMD-003, AMD-004, and AMD-006 on the exact tree before human acceptance or publication
     owner: reviewer
-    depends_on: [N6, N9]
+    depends_on: [N6, N9, N11]
     authorized_paths: []
     status: blocked
     created_from: ACC-007
@@ -300,6 +305,38 @@ graph:
       observation: README contains the marked Mermaid flow; the executable contract, full kernel suite, strict doctor, and live ai-memory QA passed on the changed tree.
       independence: This solo-agent session does not satisfy the separate review required before publication.
     stop_condition: ACC-008 passes and the diagram remains consistent with the exclusive operating-model contract
+  - id: N10
+    kind: acceptance
+    intent: Define a bounded executable contract for the English AVC development story in README.md
+    owner: verifier
+    depends_on: [N9]
+    authorized_paths:
+      - ".avc/tests/**"
+    status: completed
+    created_from: ACC-009
+    attempt: 0
+    evidence:
+      command: ["python3", "-m", "unittest", "discover", "-s", ".avc/tests", "-p", "test_avc.py", "-k", "bounded_english_avc_story"]
+      exit_code: 1
+      observation: The acceptance test failed only because README.md did not yet contain the marked English narrative.
+    stop_condition: ACC-009 fails only because the marked English narrative is not yet present
+  - id: N11
+    kind: implementation
+    intent: Add a concise English prose story that demonstrates the complete AVC usage loop
+    owner: builder
+    depends_on: [N10]
+    authorized_paths:
+      - "README.md"
+    status: completed
+    created_from: ACC-009
+    attempt: 0
+    evidence:
+      focused: .avc/evidence/acc-009-focused.json
+      full_ci: .avc/evidence/acc-009-ci.json
+      strict_doctor: .avc/evidence/acc-009-strict-doctor.json
+      observation: README contains a visible English narrative within the configured word budget and covers the complete AVC loop, exclusive SDD choice, and ai-memory boundary.
+      independence: This solo-agent session does not satisfy the separate review required before publication.
+    stop_condition: ACC-009 passes and the story remains readable, accurate, and bounded
 
 discoveries:
   - id: DISC-001
@@ -406,6 +443,38 @@ amendments:
       - Keep independent review and final human outcome acceptance pending; publication is not acceptance.
     authorized_protected_paths: []
     rollback: Publish a normal follow-up revert commit if the public change must be undone; do not rewrite main history.
+  - id: AMD-006
+    status: accepted
+    approved_by: human
+    approved_at: 2026-08-24
+    evidence: The user explicitly requested that the approved Portuguese AVC story be added to README.md in English.
+    previous:
+      readme_narrative: No end-to-end literary example of developing an application with AVC
+      oracle_status: frozen_at_revision_12
+      revision: 14
+    changes:
+      - Add ACC-009 for a concise English narrative that demonstrates the AVC lifecycle in practice.
+      - Add the story as a visible README section after the mechanical How it works explanation.
+      - Preserve AVC and SDD mutual exclusivity and ai-memory's historical, non-authoritative role.
+    authorized_protected_paths:
+      - ".avc/tests/test_avc.py"
+    rollback: Remove the marked narrative section without changing the executable AVC contract or Mermaid flow.
+  - id: AMD-007
+    status: accepted
+    approved_by: human
+    approved_at: 2026-08-24
+    evidence: The user explicitly instructed the agent to commit, push, and open a pull request for AMD-006.
+    previous:
+      branch: main with an uncommitted AMD-006 change set
+      pull_request_authority: human
+      publication_state: awaiting explicit authority for the new change set
+    changes:
+      - Create and use branch codex/add-avc-story-readme from current origin/main.
+      - Authorize one semantic commit containing README.md, the ACC-009 test, and its AVC run records.
+      - Authorize pushing the branch and opening a pull request against main after fresh gates pass.
+      - Keep independent review and final human outcome acceptance pending; the pull request is their review surface, not acceptance itself.
+    authorized_protected_paths: []
+    rollback: Close the pull request and delete the feature branch if the change is rejected; do not rewrite main history.
 evidence:
   ACC-001: N4.local_ci
   ACC-002: N4.live_memory
@@ -415,3 +484,4 @@ evidence:
   ACC-006: N4.remote_repository and N4.remote_installer
   ACC-007: N6.evidence
   ACC-008: N9.evidence
+  ACC-009: N11.evidence

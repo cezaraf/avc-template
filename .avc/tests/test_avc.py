@@ -139,6 +139,36 @@ class AvcHarnessTests(unittest.TestCase):
             self.assertIn(expected, diagram)
         self.assertNotIn("LANE --> SDD", diagram)
 
+    def test_readme_contains_a_bounded_english_avc_story(self):
+        text = (ROOT / "README.md").read_text(encoding="utf-8")
+        start_marker = "<!-- avc-story:start -->"
+        end_marker = "<!-- avc-story:end -->"
+        self.assertEqual(text.count(start_marker), 1)
+        self.assertEqual(text.count(end_marker), 1)
+
+        story = text.split(start_marker, 1)[1].split(end_marker, 1)[0]
+        for expected in (
+            "The Next Signal",
+            "AVC, not SDD",
+            ".avc/run.yaml",
+            "`avc-start`",
+            "`avc-scout`",
+            "`avc-freeze-oracle`",
+            "`avc-build-slice`",
+            "`avc-verify`",
+            "`avc-review`",
+            "`avc-live-qa`",
+            "`avc-amend`",
+            "`avc-retro`",
+            "ai-memory",
+            "historical context, not authority",
+        ):
+            self.assertIn(expected, story)
+
+        word_count = len(story.split())
+        self.assertGreaterEqual(word_count, 500)
+        self.assertLessEqual(word_count, 900)
+
     def test_path_guard_allows_active_scope_and_blocks_protected_paths(self):
         allowed = self.run_hook(
             "pre-tool-use",
